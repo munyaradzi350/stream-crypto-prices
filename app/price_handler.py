@@ -1,7 +1,8 @@
-def handle_price(data):
+import logging
+
+def handle_price(symbol, price):
     try:
-        symbol = data['s']
-        price = data['c']
-        print(f"💰 {symbol}: ${price}")
-    except KeyError:
-        print("Invalid message structure:", data)
+        formatted_price = f"${float(price):,.2f}"
+        logging.info(f"{symbol.upper()}: {formatted_price}")
+    except ValueError:
+        logging.error("Received invalid price format.")

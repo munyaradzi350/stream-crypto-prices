@@ -1,34 +1,43 @@
 import websocket
 import json
-from app.price_handler import handle_price
-
-def on_message(ws, message):
-    data = json.loads(message)
-    handle_price(data)
-
-def on_error(ws, error):
-    print("❌ Error:", error)
-
-def on_close(ws, close_status_code, close_msg):
-    print("🔌 Connection closed")
+from .price_handler import handle_price
+import logging
 
 def on_open(ws):
-
-    symbol = "btcusdt"
     payload = {
         "method": "SUBSCRIBE",
-        "params": [f"{symbol}@ticker"],
+        "params": [f"{ws.symbol}@ticker"],
         "id": 1
     }
     ws.send(json.dumps(payload))
-    print(f"✅ Subscribed to {symbol} ticker")
+    logging.info(f"✅ Subscribed to {ws.symbol.upper()} ticker")
 
-def start_websocket():
-    socket = "wss://stream.binance.com:9443/ws"
-    ws = websocket.WebSocketApp(socket,
-                                 on_open=on_open,
-                                 on_message=on_message,
-                                 on_error=on_error,
-                                 on_close=on_close)
-    print("📡 Starting Crypto Price Tracker...")
+def on_message(ws, message):
+    try:
+        data = json.loads(message)
+        if "c" in data:  # 'c' is the current price in Binance
+            handle_price(ws.symbol, data["c"])
+        elif "result" in data:
+            return  # Ignore subscription confirmation
+        else:
+            logging.warning(f"Invalid message structure: {data}")
+    except Exception as e:
+        logging.error(f"Error processing message: {e}")
+
+def on_error(ws, error):
+    logging.error(f"WebSocket error: {error}")
+
+def on_close(ws, close_status_code, close_msg):
+    logging.warning("🔌 Connection closed")
+
+def start_websocket(symbol):
+    url = "wss://stream.binance.com:9443/ws"
+    ws = websocket.WebSocketApp(
+        url,
+        on_open=on_open,
+        on_message=on_message,
+        on_error=on_error,
+        on_close=on_close
+    )
+    ws.symbol = symbol
     ws.run_forever()
