@@ -1,3 +1,6 @@
+kafka-python
 websocket-client
+pymongo
+streamlit
 python-dotenv
-python-dotenv
+pandas
