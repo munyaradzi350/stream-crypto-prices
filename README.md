@@ -2,6 +2,29 @@
 
 Tracks real-time cryptocurrency prices using Binance WebSocket API.
 
+
+             Binance WebSocket
+                    │
+                    ▼
+          [Kafka Producer (Python)]
+                    │
+                    ▼
+        ┌───── Kafka Topic: crypto-prices ─────┐
+        ▼                                      ▼
+[Kafka Consumer → MongoDB]              [Future ML Model / Alerting]
+        │
+        ▼
+[MongoDB: crypto.prices]
+        │
+        ▼
+[Streamlit UI]
+    - Current Price
+    - Historical Chart
+    - Timestamp
+
+
+
+
 ## Features
 - 🌐 Live streaming prices
 - ⚙️ Configurable crypto symbol via `.env`
